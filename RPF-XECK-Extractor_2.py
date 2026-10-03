@@ -16,6 +16,9 @@ from Kaworu import XeckExtractorAutomator
 # Import Structural Byte-Mapper & TOC Analyzer Child (Katsuragi)
 from Katsuragi import KatsuragiMain
 
+# Import Texture Extractor Child (Misato)
+from Misato import MisatoExtractor
+
 # Import legacy RPF Extractor
 import rpf_extractor
 
@@ -49,7 +52,7 @@ class XECKAnalyzerApp:
         self.notebook.add(self.tab_geometry, text="Geometry & Analysis (CSV)")
         self.notebook.add(self.tab_kaworu, text="Automated Direct Extractor (Kaworu)")
         self.notebook.add(self.tab_katsuragi, text="TOC & Binary Mapper (Katsuragi)")
-        self.notebook.add(self.tab_textures, text="Textures Module")
+        self.notebook.add(self.tab_textures, text="Textures Module (Misato)")
         self.notebook.add(self.tab_skeleton, text="Skeleton/Bones Module")
 
         self.xeck_files = []
@@ -123,8 +126,6 @@ class XECKAnalyzerApp:
             font=("Arial", 9, "italic"),
         ).pack(pady=5)
 
-        # Removed legacy Endian and Graphics Base UI elements as Kaworu auto-detects them now
-
         self.btn_kaworu_run = tk.Button(
             self.tab_kaworu,
             text="Run Automated Direct Extraction (Kaworu)",
@@ -178,10 +179,36 @@ class XECKAnalyzerApp:
         self.katsuragi_log_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
     def _build_texture_tab(self):
-        tk.Label(self.tab_textures, text="Texture Extraction Module (Powered by Kaworu)", font=("Arial", 11, "bold")).pack(pady=20)
+        tk.Label(
+            self.tab_textures,
+            text="Misato: Direct XECK Texture Extractor",
+            font=("Arial", 11, "bold")
+        ).pack(pady=(10, 0))
+
+        tk.Label(
+            self.tab_textures,
+            text="Scans XECK files for Xenos GPU Fetch Constants, reconstructs 2D-tiled block layouts,\n"
+            "and exports directly to DDS and PNG formats with corresponding mip-maps.",
+            font=("Arial", 9, "italic"),
+        ).pack(pady=5)
+
+        self.btn_misato_run = tk.Button(
+            self.tab_textures,
+            text="Run Texture Extraction (Misato)",
+            command=self.start_misato_extraction,
+            bg="darkred",
+            fg="white",
+            font=("Arial", 10, "bold"),
+        )
+        self.btn_misato_run.pack(pady=10)
+
+        self.misato_log_area = scrolledtext.ScrolledText(
+            self.tab_textures, width=75, height=14, state=tk.DISABLED, bg="black", fg="pink"
+        )
+        self.misato_log_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
     def _build_skeleton_tab(self):
-        tk.Label(self.tab_skeleton, text="Skeleton & Rigging Module (Powered by Kaworu)", font=("Arial", 11, "bold")).pack(pady=20)
+        tk.Label(self.tab_skeleton, text="Skeleton & Rigging Module", font=("Arial", 11, "bold")).pack(pady=20)
 
     def log(self, message: str, target_area: Optional[scrolledtext.ScrolledText] = None):
         area = target_area or self.log_area
@@ -196,6 +223,9 @@ class XECKAnalyzerApp:
 
     def katsuragi_log(self, message: str):
         self.log(message, target_area=self.katsuragi_log_area)
+        
+    def misato_log(self, message: str):
+        self.log(message, target_area=self.misato_log_area)
 
     def update_btn_state(self):
         if self.xeck_files and self.csv_files and self.output_dir:
@@ -317,16 +347,43 @@ class XECKAnalyzerApp:
 
         for xeck_file in self.xeck_files:
             try:
-                # Kaworu now calculates parameters intrinsically. Only xeck_path is needed.
-                automator = XeckExtractorAutomator(xeck_path=xeck_file)
-                # Updated method call to match Kaworu.py's run_pipeline
+                automator = XeckExtractorAutomator(xeck_path=xeck_file, log_callback=self.kaworu_log)
                 automator.run_pipeline(self.output_dir)
                 self.kaworu_log(f"    [+] Successfully extracted meshes for {os.path.basename(xeck_file)}")
             except Exception as e:
                 self.kaworu_log(f"[!] Exception during Kaworu extraction for {xeck_file}: {e}")
 
-        self.kaworu_log("[✔] All XECK files processed via Kaworu Automator! Check your console output for detailed vertex logs.")
+        self.kaworu_log("[✔] All XECK files processed via Kaworu Automator!")
         self.root.after(0, lambda: self.btn_kaworu_run.config(state=tk.NORMAL))
+
+    def start_misato_extraction(self):
+        if not self.xeck_files:
+            self.misato_log("[!] Error: No XECK files selected. Select XECK files under 'Geometry & Analysis' tab first.")
+            return
+
+        if not self.output_dir:
+            self.misato_log("[!] Error: Output directory not selected. Select Output Directory first.")
+            return
+
+        self.btn_misato_run.config(state=tk.DISABLED)
+        self.misato_log_area.config(state=tk.NORMAL)
+        self.misato_log_area.delete(1.0, tk.END)
+        self.misato_log_area.config(state=tk.DISABLED)
+
+        threading.Thread(target=self.process_misato_pipeline, daemon=True).start()
+
+    def process_misato_pipeline(self):
+        self.misato_log("[*] Initializing Misato Direct Texture Extraction...")
+
+        for xeck_file in self.xeck_files:
+            try:
+                extractor = MisatoExtractor(xeck_path=xeck_file, log_callback=self.misato_log)
+                extractor.run_pipeline(self.output_dir)
+            except Exception as e:
+                self.misato_log(f"[!] Exception during Misato extraction for {xeck_file}: {e}")
+
+        self.misato_log("[✔] All XECK files processed via Misato Textures Extractor!")
+        self.root.after(0, lambda: self.btn_misato_run.config(state=tk.NORMAL))
 
     def start_katsuragi_mapping(self):
         if not self.xeck_files:
