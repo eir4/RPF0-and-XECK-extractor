@@ -2,3 +2,8 @@ This Tool allows for the extraction of both RPF v0 files and XECK files, these f
 If you only want to extract RPF files use rpf_extractor.
 
 To extract XECK files use the GUI by opening RPF-XECK-Extractor_2.py to easily select the XECK file and output folder, use Kaworu for automated extraction of 3D meshes.
+
+
+
+Extracted meshes are in obj format and do not contain textures yet, however if you can help I would appreciate it.
+<img width="1173" height="727" alt="image" src="https://github.com/user-attachments/assets/d55cba70-8e55-423e-8716-e0738fe9e82c" />
