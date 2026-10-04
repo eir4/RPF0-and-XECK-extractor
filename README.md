@@ -31,7 +31,8 @@ For character files, the toolkit provides a dedicated interface:
 
 ### Mesh, Material and Texture Extraction (Kaworu Module)
 Use the **Kaworu** tab for automated extraction of 3D meshes `[cite: 13]`. Meshes are exported in standard .obj format and include their original UV maps automatically decoded from the vertex buffers `[cite: 12, 13]`. 
-<img width="600" alt="image" src="https://github.com/user-attachments/assets/c6314ea0-e5ca-4197-8384-84fda214929d" />
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/7aa12a5c-45af-469e-90b3-a97fd299f730" />
+
 `[cite: 13]`
 
 *(Note: Bare meshes do not contain textures natively, but the material grouping is preserved in the output for easy mapping`[cite: 11, 13]`.)*
@@ -54,6 +55,7 @@ You can manually map these extracted textures onto your models in your preferred
 `[cite: 13]`
 
 Materials are successfully extracted and linked, allowing for easy imports directly into Blender`[cite: 13]`. *(Note: Some complex layered shaders, like hair physics strips, may require manual tweaking as they can look slightly off by default`[cite: 13]`.)*
+
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/a4fd4b54-13c2-4822-b5d1-6eaf46b2731f" />
 
 `[cite: 13]`
