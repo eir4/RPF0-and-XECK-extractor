@@ -25,7 +25,7 @@ For character files, the toolkit provides a dedicated interface:
 2. Select your target `.xeck` file and designate an output folder  `[cite: 13]`.
 3. Navigate to the **XECK** interface tab to access specific extraction modules  `[cite: 13]`.
 
-<img width="927" height="808" alt="image" src="https://github.com/user-attachments/assets/f932edd0-7462-4af6-b770-e8629ecdf2ea" />
+<img width="300" alt="image" src="https://github.com/user-attachments/assets/f932edd0-7462-4af6-b770-e8629ecdf2ea" />
 
 `[cite: 13]`
 
@@ -42,7 +42,8 @@ Use the **Kaworu** tab for automated extraction of 3D meshes `[cite: 13]`. Meshe
 ### Texture Extraction (Misato Module)
 1. Within the main GUI, switch to the **Advanced Modules** tab under the XECK side `[cite: 13]`.
 2. This module bypasses the lack of standard headers by finding Xenos GPU fetch constants, untangling the tiled memory, and saving the files as standard DDS and PNG textures `[cite: 7, 9, 13]`.
-<img width="600" alt="image" src="https://github.com/user-attachments/assets/fc324485-e3f2-4ee3-8149-1696d28fe9bc" />
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/3e1804c9-9936-4d39-b6b4-31b8bfb901d3" />
+
 
 `[cite: 13]`
 
