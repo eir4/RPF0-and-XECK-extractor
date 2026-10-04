@@ -24,3 +24,8 @@ Extracted meshes are in obj format and do not contain textures yet, however if y
 
 To extract Textures, open the main GUI select your XECK and output directory and click the Misato tab on the XECK side 
 <img width="1003" height="997" alt="image" src="https://github.com/user-attachments/assets/cf461073-ffbb-426d-b587-5dbbf183d5c8" />
+
+
+You can still insert the textures manually as seen below:
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/79f41d46-30da-4b79-96bc-fa7f18aa4c31" />
+(Liu Ping textured)
