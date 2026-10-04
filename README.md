@@ -1,4 +1,4 @@
-<img width="3200" height="2600" alt="RPF0   XEC EXTRACTOR" src="https://github.com/user-attachments/assets/3045ade4-ed77-4f1f-a040-0a42641706aa" />
+<img width="3700" height="2600" alt="RPF0   XEC EXTRACTOR (3700 x 2600 px)" src="https://github.com/user-attachments/assets/b496151d-32d1-461c-8c8a-c9102ae090d7" />
 
 This Tool allows for the extraction of both RPF v0 files and XECK files, these file formats are proprietary of Rockstar Games Presents Table Tennis for the XBOX 360.
 <img width="1920" height="1040" alt="image" src="https://github.com/user-attachments/assets/82fa9d80-a2b6-4ca1-8520-c97f9ef7d8ac" />
