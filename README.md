@@ -29,3 +29,7 @@ To extract Textures, open the main GUI select your XECK and output directory and
 You can still insert the textures manually as seen below:
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/79f41d46-30da-4b79-96bc-fa7f18aa4c31" />
 (Liu Ping textured)
+
+Now we can extract the materials to easily import into blender (Hair looks weird, something is off)
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/a4fd4b54-13c2-4822-b5d1-6eaf46b2731f" />
+
