@@ -53,15 +53,24 @@ def find_fetch_constants(raw, base):
         d1 = int(a[i + 1])
         if not (base <= d1 < base + len(raw)) or (d1 & 0x3F) not in FMT or ((d1 >> 6) & 3) != 1: continue
         d2 = int(a[i + 2]); w = (d2 & 0x1FFF) + 1; h = ((d2 >> 13) & 0x1FFF) + 1
-        if w < 4 or h < 4 or (w & (w - 1)) or (h & (h - 1)): continue
+        if w < 4 or h < 4 or w > 4096 or h > 4096 or (w & (w - 1)) or (h & (h - 1)): continue
+        if raw[i * 4 - 16:i * 4] != SIG: continue              # every real fetch constant is preceded by this 16-byte signature
+        if (d1 & ~0xFFF) - base + w * h // 2 > len(raw): continue
         res.append(dict(at=i * 4, d=[int(x) for x in a[i:i + 6]], w=w, h=h, fmt=d1 & 0x3F))
     return res
 
+SIG = bytes.fromhex('40030001' '00000000' 'ffff0000' 'ffff0000')
+TEX_TAG = b'\x82\x02\xcc\x84'      # type tag at the start of every texture record
+
+def record_start(raw, at):
+    r = raw.rfind(TEX_TAG, max(0, at - 0x80), at)
+    return r if r >= 0 else None
+
 def guess_name(raw, at):
-    for back in (0x30,):
-        s = raw[at - back:at - back + 0x20].split(b'\0')[0]
-        if 3 < len(s) < 0x20 and all(32 <= c < 127 for c in s): return s.decode()
-    return None
+    r = record_start(raw, at)
+    if r is None: return None
+    s = raw[r + 0x20:r + 0x50].split(b'\0')[0]       # name field starts 0x20 into the record (up to 0x30 long)
+    return s.decode() if 3 < len(s) and all(32 <= c < 127 for c in s) else None
 
 def level_plan(w, h, bs, base_off, mip_off, nlevels):
     """-> list of (level, bw, bh, start, ox, oy, width_blocks)"""
