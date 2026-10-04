@@ -59,6 +59,8 @@ Materials are successfully extracted and linked, allowing for easy imports direc
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/a4fd4b54-13c2-4822-b5d1-6eaf46b2731f" />
 
 `[cite: 13]`
+Now we can extract the Skeleton, Materials, UV, Normals and the hair looks fine
+<img width="1920" height="1040" alt="image" src="https://github.com/user-attachments/assets/8ccd1db1-b388-4d1e-84f1-e4516b5b4f45" />
 
 ---
 
