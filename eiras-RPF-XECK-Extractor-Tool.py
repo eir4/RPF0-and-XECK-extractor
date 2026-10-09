@@ -1,10 +1,19 @@
 import os
+import sys
 import threading
 import traceback
 from pathlib import Path
 from typing import Optional
 import tkinter as tk
 from tkinter import filedialog, scrolledtext, ttk
+
+# Get the exact folder where the main GUI script lives
+basedir = os.path.dirname(os.path.abspath(__file__))
+
+# Inject the new Souls subfolders into Python's path
+sys.path.insert(0, os.path.join(basedir, "Souls", "angels"))
+sys.path.insert(0, os.path.join(basedir, "Souls", "angels", "14"))
+sys.path.insert(0, os.path.join(basedir, "Souls", "NERV"))
 
 # Import Geometry & Analysis Children
 from Rei import XeckOffsetCrossReferencer
@@ -445,8 +454,10 @@ def main():
     root.geometry("1420x650")
 
     try:
-        app_icon = tk.PhotoImage(file="Rockstar_San_Diego_Logo.png")
+        logo_path = os.path.join(basedir, "Backend", "Rockstar_San_Diego_Logo.png")
+        app_icon = tk.PhotoImage(file=logo_path)
         root.iconphoto(False, app_icon)
+        app_icon = tk.PhotoImage(file=logo_path)
     except Exception:
         pass
 
@@ -469,8 +480,13 @@ def main():
     try:
         from PIL import Image, ImageTk
 
-        img_d_raw = Image.open("Dark-Mode.png")
-        img_def_raw = Image.open("Default.png")
+        # 1. Build the correct paths to both images inside the Backend folder
+        dark_mode_path = os.path.join(basedir, "Backend", "Dark-Mode.png")
+        default_mode_path = os.path.join(basedir, "Backend", "Default.png")
+
+        # 2. Use the variables you just built inside Image.open()
+        img_d_raw = Image.open(dark_mode_path)
+        img_def_raw = Image.open(default_mode_path)
 
         # Force the image to fit cleanly in the left pane (550px wide)
         target_width = 550
@@ -488,13 +504,18 @@ def main():
         print("[!] Pillow (PIL) not installed. Using raw Tkinter subsampling.")
         try:
             # Fallback: Just divide the image size by 2 natively
-            root.img_dark = tk.PhotoImage(file="Dark-Mode.png").subsample(2, 2)
-            root.img_default = tk.PhotoImage(file="Default.png").subsample(2, 2)
+            dark_mode_path = os.path.join(basedir, "Backend", "Dark-Mode.png")
+            default_mode_path = os.path.join(basedir, "Backend", "Default.png")
+
+            # Use the variables here as well
+            root.img_dark = tk.PhotoImage(file=dark_mode_path).subsample(2, 2)
+            root.img_default = tk.PhotoImage(file=default_mode_path).subsample(2, 2)
         except Exception:
             root.img_dark, root.img_default = None, None
     except Exception as e:
         print(f"[!] Error loading banner images: {e}")
         root.img_dark, root.img_default = None, None
+
 
     # 4. CREATE BANNER WITH PADDING
     banner_label = tk.Label(left_frame)
@@ -512,7 +533,7 @@ def main():
         tk.Label(left_frame, text=f"Failed to load RPF Extractor module:\n{e}").pack(pady=20)
 
     xeck_app = XECKAnalyzerApp(right_frame)
-
+    app_icon = tk.PhotoImage(file=logo_path)
     root.update_idletasks()
     theme_manager.init_colors()
 
