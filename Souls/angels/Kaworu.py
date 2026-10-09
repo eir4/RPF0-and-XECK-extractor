@@ -4,9 +4,11 @@ import bisect
 from pathlib import Path
 import numpy as np
 
+from Angels import AngelsGltfPipeline
 from XeckTopologyHandler import XeckTopologyHandler
 from XeckTOCScanner import XeckMaterialScanner
 from Misato import MisatoExtractor
+
 
 class XeckExtractorAutomator:
     """Master Orchestrator wrapped for GUI integration. Handles full mesh, UV, and link mapping."""
@@ -24,7 +26,7 @@ class XeckExtractorAutomator:
         objs = []
         for i in np.nonzero(a == 2)[0]:
             if i < 1 or i + 5 >= len(a): continue
-            cnt, ptr, ptr3, zero = int(a[i-1]), int(a[i+1]), int(a[i+3]), int(a[i+4])
+            cnt, ptr, ptr3, zero = int(a[i - 1]), int(a[i + 1]), int(a[i + 3]), int(a[i + 4])
             if 6 <= cnt <= 200000 and ptr == ptr3 and zero == 0:
                 off = ptr - self.base
                 obj = (i - 1) * 4
@@ -38,10 +40,10 @@ class XeckExtractorAutomator:
         a = np.frombuffer(self.raw[:len(self.raw) // 4 * 4], '>u4')
         descs = []
         for i in np.nonzero(a[1:-5] == 0)[0] + 1:
-            nv, A, C = int(a[i-1]), int(a[i+1]), int(a[i+3])
+            nv, A, C = int(a[i - 1]), int(a[i + 1]), int(a[i + 3])
             if 3 <= nv <= 65535 and self.base <= A < self.base + len(self.raw) and C == A + 0x20:
                 descs.append(((i - 1) * 4, nv, A - self.base))
-        
+
         descs.sort()
         claimed = {}
         for d, nv, A in descs:
@@ -53,20 +55,39 @@ class XeckExtractorAutomator:
         return nvs, claimed
 
     def run_pipeline(self, output_dir: str):
-        self.log(f"[*] Initializing mesh scanning for {self.xeck_path.name}...")
+        self.log(f"[*] Kaworu: Initiating extraction for {self.xeck_path.name}")
         out = Path(output_dir) / self.xeck_path.stem
+        out.mkdir(parents=True, exist_ok=True)
+
+        # 1. Run Angels (Strict glTF Pipeline)
+        self.log("[*] Kaworu: Delegating primary extraction to Angels...")
+        angels = AngelsGltfPipeline(str(self.xeck_path), self.log)
+        angels.run_pipeline(output_dir)
+
+        # 2. Validation Check
+        mesh_dir = out / "meshes"
+        extracted_meshes = list(mesh_dir.glob("*.obj")) if mesh_dir.exists() else []
+
+        if len(extracted_meshes) > 0:
+            self.log(f"[+] Kaworu: Angels successfully extracted {len(extracted_meshes)} meshes. Pipeline complete.")
+            return out
+
+        # 3. Trigger Legacy Fallback
+        self.log(f"[!] Kaworu: Angels strict validation yielded 0 meshes. Initiating legacy fallback extraction...")
+        self.run_legacy_fallback(out)
+        return out
+
+    def run_legacy_fallback(self, out: Path):
         mesh_dir = out / "meshes"
         mesh_dir.mkdir(parents=True, exist_ok=True)
 
-        # 1. Trigger Misato to extract physical .dds/.png textures
-        self.log("[*] Extracting textures via Misato...")
+        self.log("[*] Legacy: Extracting textures via Misato...")
         try:
             misato = MisatoExtractor(xeck_path=str(self.xeck_path), log_callback=self.log)
             misato.run_pipeline(str(out))
         except Exception as e:
             self.log(f"[!] Texture extraction failed: {e}")
 
-        # 2. Load the texture table to map filenames for the .mtl
         tex = {}
         tex_csv = out / 'texture_table.csv'
         if tex_csv.exists():
@@ -76,12 +97,10 @@ class XeckExtractorAutomator:
         objs = self.find_index_objects()
         nvs, claimed = self.pair_meshes(objs)
 
-        # 3. Pull Materials and write JSON/CSV
         mats = self.material_scanner.parse_materials()
         self.material_scanner.export_materials(out, mats)
-        self.log(f"[+] Exported {len(mats)} embedded materials.")
+        self.log(f"[+] Legacy: Exported {len(mats)} embedded materials.")
 
-        # 4. Generate the physical materials.mtl file to link textures
         with open(out / 'materials.mtl', 'w') as f:
             for i, m in enumerate(mats):
                 mat_name = m['entity'].replace('entity_', '').replace('.sva', '') if m['entity'] else f'material_{i}'
@@ -96,7 +115,6 @@ class XeckExtractorAutomator:
                     f.write(f"map_Bump {tex[nm]}\n")
                 f.write("\n")
 
-        # 5. Extract Meshes
         rows = []
         for k, (obj, off, cnt) in enumerate(objs):
             nv = nvs[k]
@@ -134,12 +152,4 @@ class XeckExtractorAutomator:
             w.writerow(['n', 'index_data', 'index_count', 'verts', 'vb_start', 'stride', 'topology', 'file'])
             w.writerows(rows)
 
-        self.log(f"[+] Mesh scanning complete for {self.xeck_path.name}")
-
-
-        with open(out / 'mesh_table.csv', 'w', newline='') as f:
-            w = csv.writer(f)
-            w.writerow(['n', 'index_data', 'index_count', 'verts', 'vb_start', 'stride', 'topology', 'file'])
-            w.writerows(rows)
-
-        self.log(f"[+] Mesh scanning complete for {self.xeck_path.name}")
+        self.log(f"[+] Legacy: Mesh scanning complete for {self.xeck_path.name}")
